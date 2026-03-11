@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
-use Cloudinary\Cloudinary;
+use App\Services\CloudinaryService;
 use App\Models\ProductImage;
 
 class ProductController extends Controller
@@ -47,17 +47,9 @@ class ProductController extends Controller
             'sku' => 'required|unique:products',
             'category_id' => 'required',
             'brand_id' => 'required',
+            'color' => 'nullable|string|max:255',
             'thumbnail' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images.*' => 'image|mimes:jpg,png,jpeg|max:2048'
-        ]);
-
-        // Tạo cloudinary instance
-        $cloudinary = new Cloudinary([
-            'cloud' => [
-                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_KEY'),
-                'api_secret' => env('CLOUDINARY_SECRET'),
-            ],
         ]);
 
         /*
@@ -67,15 +59,17 @@ class ProductController extends Controller
     */
 
         $thumbnailUrl = null;
+        $thumbnailPublicId = null;
 
         if ($request->hasFile('thumbnail')) {
 
-            $upload = $cloudinary->uploadApi()->upload(
-                $request->file('thumbnail')->getRealPath(),
-                ['folder' => 'products']
+            $upload = CloudinaryService::upload(
+                $request->file('thumbnail'),
+                'products/main'
             );
 
-            $thumbnailUrl = $upload['secure_url'];
+            $thumbnailUrl = $upload['url'];
+            $thumbnailPublicId = $upload['public_id'];
         }
 
         /*
@@ -86,16 +80,18 @@ class ProductController extends Controller
 
         $product = Product::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $this->generateSlug($request->name),
             'sku' => $request->sku,
             'short_description' => $request->short_description,
             'description' => $request->description,
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'thumbnail' => $thumbnailUrl,
+            'thumbnail_public_id' => $thumbnailPublicId,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
             'stock' => $request->stock,
+            'color' => $request->color,
             'is_active' => $request->is_active
         ]);
 
@@ -109,14 +105,15 @@ class ProductController extends Controller
 
             foreach ($request->file('images') as $key => $image) {
 
-                $upload = $cloudinary->uploadApi()->upload(
-                    $image->getRealPath(),
-                    ['folder' => 'products']
+                $upload = CloudinaryService::upload(
+                    $image,
+                    'products/gallery'
                 );
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image_path' => $upload['secure_url'],
+                    'image_path' => $upload['url'],
+                    'image_public_id' => $upload['public_id'],
                     'sort_order' => $key
                 ]);
             }
@@ -125,6 +122,15 @@ class ProductController extends Controller
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Thêm sản phẩm thành công');
+    }
+
+    private function generateSlug($name)
+    {
+        $slug = Str::slug($name);
+
+        $count = Product::where('slug', 'LIKE', "{$slug}%")->count();
+
+        return $count ? "{$slug}-{$count}" : $slug;
     }
 
     /**
@@ -156,6 +162,27 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::with('images')->findOrFail($id);
+
+        if ($product->thumbnail_public_id) {
+            CloudinaryService::destroy($product->thumbnail_public_id);
+        }
+
+        // xóa gallery
+        foreach ($product->images as $img) {
+            if ($img->image_public_id) {
+                CloudinaryService::destroy($img->image_public_id);
+            }
+        }
+
+        // xóa images DB
+        $product->images()->delete();
+
+        // xóa product
+        $product->delete();
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Xóa sản phẩm thành công');
     }
 }

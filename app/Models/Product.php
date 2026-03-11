@@ -15,9 +15,11 @@ class Product extends Model
         'category_id',
         'brand_id',
         'thumbnail',
+        'thumbnail_public_id',
         'price',
         'sale_price',
         'stock',
+        'color',
         'is_featured',
         'is_active'
     ];
@@ -37,5 +39,10 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }

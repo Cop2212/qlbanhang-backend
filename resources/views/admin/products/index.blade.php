@@ -54,6 +54,7 @@
                     <th>Tên sản phẩm</th>
                     <th>Danh mục</th>
                     <th>Thương hiệu</th>
+                    <th>Màu sắc</th>
                     <th>Giá thấp nhất</th>
                     <th>Kho</th>
                     <th>Trạng thái</th>
@@ -89,6 +90,10 @@
                         {{ $product->brand->name ?? '---' }}
                     </td>
 
+                    <td>
+                        {{ $product->color ?? '---' }}
+                    </td>
+
                     <td class="text-danger">
                         {{ number_format($product->price) }} đ
                     </td>
@@ -113,14 +118,15 @@
 
                         <form action="{{ route('admin.products.destroy',$product->id) }}"
                             method="POST"
-                            style="display:inline-block">
+                            class="d-inline">
 
                             @csrf
                             @method('DELETE')
 
-                            <button class="btn btn-sm btn-danger"
-                                onclick="return confirm('Xóa sản phẩm này?')">
-                                Xoá
+                            <button type="submit"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?')">
+                                Xóa
                             </button>
 
                         </form>

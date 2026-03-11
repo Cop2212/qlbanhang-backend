@@ -74,6 +74,12 @@
         <a href="{{ route('admin.brands.index') }}">🏷 Hãng</a>
         <a href="#">🛒 Đơn hàng</a>
         <a href="#">👥 Khách hàng</a>
+
+        <hr>
+
+        <a href="{{ route('admin.sliders.index') }}">🖼 Slider</a>
+        <a href="{{ route('admin.reviews.index') }}">⭐ Đánh giá</a>
+        <a href="{{ route('admin.settings.index') }}">⚙ Cài đặt website</a>
     </div>
 
     <div class="content">

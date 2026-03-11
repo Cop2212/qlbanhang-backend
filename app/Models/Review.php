@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductImage extends Model
+class Review extends Model
 {
     protected $fillable = [
         'product_id',
-        'image_path',
-        'image_public_id',
-        'sort_order'
+        'name',
+        'email',
+        'rating',
+        'comment',
+        'is_approved'
     ];
 
     public function product()

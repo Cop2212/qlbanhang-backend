@@ -93,6 +93,14 @@
 
             <div class="row mt-3" id="preview-images"></div>
 
+            <div class="mb-3">
+                <label class="form-label">Màu sắc</label>
+                <input type="text"
+                    name="color"
+                    class="form-control"
+                    placeholder="Ví dụ: Đen, Trắng, Đen - Vàng">
+            </div>
+
             <div class="col-md-4 mb-3">
                 <label>Giá</label>
                 <input type="number" name="price" class="form-control">
