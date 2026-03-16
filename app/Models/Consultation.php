@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Brand extends Model
+class Consultation extends Model
 {
     protected $fillable = [
         'name',
-        'slug',
-        'logo',
-        'logo_public_id',
-        'is_active'
+        'phone',
+        'email',
+        'message',
+        'status'
     ];
 }

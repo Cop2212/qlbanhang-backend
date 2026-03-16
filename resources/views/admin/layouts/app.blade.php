@@ -74,6 +74,7 @@
         <a href="{{ route('admin.brands.index') }}">🏷 Hãng</a>
         <a href="#">🛒 Đơn hàng</a>
         <a href="#">👥 Khách hàng</a>
+        <a href="{{ route('admin.consultations.index') }}">📞 Tư vấn khách hàng</a>
 
         <hr>
 

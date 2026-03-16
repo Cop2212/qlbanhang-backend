@@ -12,6 +12,7 @@ class Review extends Model
         'email',
         'rating',
         'comment',
+        'ip_address',
         'is_approved'
     ];
 

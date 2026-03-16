@@ -33,4 +33,14 @@ class ProductController extends Controller
             'similar_products' => $similar
         ];
     }
+
+    public function featuredProducts()
+    {
+        return Product::where('is_featured', 1)
+            ->where('is_active', 1)
+            ->select('id', 'name', 'slug', 'price', 'thumbnail', 'color')
+            ->latest()
+            ->take(8)
+            ->get();
+    }
 }

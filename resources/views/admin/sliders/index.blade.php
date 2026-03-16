@@ -12,33 +12,71 @@
 <div class="card">
     <div class="card-body">
 
-        <table class="table table-bordered align-middle">
-            <thead>
-                <tr>
-                    <th width="60">ID</th>
-                    <th>Hình ảnh</th>
-                    <th>Tiêu đề</th>
-                    <th>Link</th>
-                    <th width="120">Thứ tự</th>
-                    <th width="150">Trạng thái</th>
-                    <th width="180">Hành động</th>
-                </tr>
-            </thead>
+        {{-- FORM DELETE MULTIPLE --}}
+        <form id="deleteForm" action="{{ route('admin.sliders.deleteMultiple') }}" method="POST">
+            @csrf
 
-            <tbody>
+            <button type="submit"
+                id="deleteSelectedBtn"
+                class="btn btn-danger mb-3"
+                style="display:none"
+                onclick="return confirm('Xóa các slider đã chọn?')">
+                🗑 Xóa đã chọn
+            </button>
 
-                @foreach($sliders as $slider)
+        </form>
 
-                <tr>
 
-                    <form action="{{ route('admin.sliders.update',$slider->id) }}" method="POST">
+        {{-- FORM UPDATE MULTIPLE --}}
+        <form id="updateForm" action="{{ route('admin.sliders.updateMultiple') }}" method="POST">
 
-                        @csrf
-                        @method('PUT')
+            @csrf
 
-                        <td>{{ $slider->id }}</td>
+            <button type="submit" class="btn btn-success mb-3">
+                💾 Lưu toàn bộ
+            </button>
+
+
+            @if($errors->any())
+            <div class="alert alert-danger">
+                {{ $errors->first() }}
+            </div>
+            @endif
+
+            <table class="table table-bordered align-middle">
+
+                <thead>
+                    <tr>
+                        <th width="40">
+                            <input type="checkbox" id="checkAll">
+                        </th>
+                        <th width="60">STT</th>
+                        <th>Hình ảnh</th>
+                        <th>Tiêu đề</th>
+                        <th>Link</th>
+                        <th width="120">Thứ tự</th>
+                        <th width="150">Trạng thái</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach($sliders as $slider)
+
+                    <tr>
 
                         <td>
+                            <input type="checkbox"
+                                name="ids[]"
+                                value="{{ $slider->id }}"
+                                class="slider-checkbox"
+                                form="deleteForm">
+                        </td>
+
+                        <td>
+                            {{ $sliders->firstItem() + $loop->index }}
+                        </td>
+
                         <td>
                             @if($slider->image)
                             <img src="{{ $slider->image }}" width="120">
@@ -46,23 +84,27 @@
                             <span class="text-muted">Không có ảnh</span>
                             @endif
                         </td>
-                        </td>
 
                         <td>{{ $slider->title }}</td>
 
                         <td>{{ $slider->link }}</td>
 
                         <td>
+
                             <input type="number"
-                                name="sort_order"
+                                name="sort_order[{{ $slider->id }}]"
                                 value="{{ $slider->sort_order }}"
-                                min="1"
+                                min="0"
                                 max="{{ $maxSlider }}"
-                                class="form-control">
+                                class="form-control"
+                                style="width:90px">
+
                         </td>
 
                         <td>
-                            <select name="is_active" class="form-control">
+
+                            <select name="is_active[{{ $slider->id }}]" class="form-control">
+
                                 <option value="1" {{ $slider->is_active ? 'selected' : '' }}>
                                     Hiển thị
                                 </option>
@@ -70,51 +112,62 @@
                                 <option value="0" {{ !$slider->is_active ? 'selected' : '' }}>
                                     Ẩn
                                 </option>
+
                             </select>
+
                         </td>
 
-                        <td>
+                    </tr>
 
-                            <button class="btn btn-success btn-sm">
-                                Lưu
-                            </button>
+                    @endforeach
 
-                            <a href="{{ route('admin.sliders.edit',$slider->id) }}"
-                                class="btn btn-warning btn-sm">
-                                Sửa
-                            </a>
+                </tbody>
 
-                    </form>
+            </table>
 
-                    <form action="{{ route('admin.sliders.destroy',$slider->id) }}"
-                        method="POST"
-                        style="display:inline">
-                        @csrf
-                        @method('DELETE')
+            <div class="mt-3 d-flex justify-content-between align-items-center">
 
-                        <button class="btn btn-danger btn-sm">
-                            Xóa
-                        </button>
+                <div>
+                    Hiển thị {{ $sliders->firstItem() }}
+                    -
+                    {{ $sliders->lastItem() }}
+                    / {{ $sliders->total() }} slider
+                </div>
 
-                    </form>
+                <div>
+                    {{ $sliders->links() }}
+                </div>
 
-                    </td>
+            </div>
 
-                </tr>
-
-                @endforeach
-
-            </tbody>
-
-        </table>
+        </form>
 
     </div>
 </div>
 
-@if($errors->any())
-<div class="alert alert-danger">
-    {{ $errors->first() }}
-</div>
-@endif
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const checkAll = document.getElementById('checkAll');
+        const checkboxes = document.querySelectorAll('.slider-checkbox');
+        const deleteBtn = document.getElementById('deleteSelectedBtn');
+
+        function toggleDeleteButton() {
+            let checked = document.querySelectorAll('.slider-checkbox:checked');
+            deleteBtn.style.display = checked.length ? 'inline-block' : 'none';
+        }
+
+        checkAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            toggleDeleteButton();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', toggleDeleteButton);
+        });
+
+    });
+</script>
 
 @endsection

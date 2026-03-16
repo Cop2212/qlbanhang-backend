@@ -15,7 +15,7 @@ class ReviewController extends Controller
     {
         $reviews = Review::with('product')
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return view('admin.reviews.index', compact('reviews'));
     }
@@ -60,11 +60,23 @@ class ReviewController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $review = Review::findOrFail($id);
+
+        $review->delete();
+
+        return back()->with('success', 'Đã xóa đánh giá');
+    }
+
+    public function approve($id)
+    {
+        $review = Review::findOrFail($id);
+
+        $review->update([
+            'is_approved' => !$review->is_approved
+        ]);
+
+        return back()->with('success', 'Cập nhật trạng thái thành công');
     }
 }

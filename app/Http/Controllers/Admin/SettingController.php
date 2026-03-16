@@ -6,18 +6,20 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Setting;
 use App\Services\CloudinaryService;
+use App\Models\Company;
 
 class SettingController extends Controller
 {
     public function index()
     {
         $setting = Setting::first();
+        $company = Company::first();
 
         if (!$setting) {
             $setting = Setting::create([]);
         }
 
-        return view('admin.settings.index', compact('setting'));
+        return view('admin.settings.index', compact('setting', 'company'));
     }
 
     public function update(Request $request)

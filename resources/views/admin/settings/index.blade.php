@@ -121,4 +121,73 @@
     }
 </script>
 
+<h4 class="mb-4 mt-5">Giới thiệu công ty</h4>
+
+<form method="POST" action="{{ route('admin.company.update') }}">
+
+    @csrf
+
+    <div class="card">
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label>Tên công ty</label>
+                    <input type="text"
+                        name="name"
+                        class="form-control"
+                        value="{{ $company->name ?? '' }}">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Mã số thuế</label>
+                    <input type="text"
+                        name="tax_code"
+                        class="form-control"
+                        value="{{ $company->tax_code ?? '' }}">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Người đại diện</label>
+                    <input type="text"
+                        name="representative"
+                        class="form-control"
+                        value="{{ $company->representative ?? '' }}">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Năm thành lập</label>
+                    <input type="number"
+                        name="established_year"
+                        class="form-control"
+                        value="{{ $company->established_year ?? '' }}">
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label>Tiêu đề</label>
+                    <input type="text"
+                        name="title"
+                        class="form-control"
+                        value="{{ $company->title ?? '' }}">
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label>Nội dung giới thiệu</label>
+                    <textarea name="content"
+                        class="form-control"
+                        rows="5">{{ $company->content ?? '' }}</textarea>
+                </div>
+
+            </div>
+
+            <button class="btn btn-success">
+                Lưu giới thiệu công ty
+            </button>
+
+        </div>
+    </div>
+
+</form>
+
 @endsection

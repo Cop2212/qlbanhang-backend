@@ -16,7 +16,7 @@ class SliderController extends Controller
      */
     public function index()
     {
-        $sliders = Slider::orderBy('sort_order')->get();
+        $sliders = Slider::orderBy('sort_order')->paginate(10);
 
         $maxSlider = Setting::first()->max_sliders ?? 1;
 
@@ -146,5 +146,71 @@ class SliderController extends Controller
         return redirect()
             ->route('admin.sliders.index')
             ->with('success', 'Xóa slider thành công');
+    }
+
+    public function deleteMultiple(Request $request)
+    {
+        $ids = $request->ids;
+
+        if (!$ids) {
+            return redirect()
+                ->route('admin.sliders.index')
+                ->with('error', 'Chưa chọn slider');
+        }
+
+        $sliders = Slider::whereIn('id', $ids)->get();
+
+        foreach ($sliders as $slider) {
+
+            // xóa ảnh cloudinary nếu có
+            if ($slider->image_public_id) {
+                CloudinaryService::destroy($slider->image_public_id);
+            }
+
+            $slider->delete();
+        }
+
+        return redirect()
+            ->route('admin.sliders.index')
+            ->with('success', 'Đã xóa các slider đã chọn');
+    }
+
+    public function updateMultiple(Request $request)
+    {
+        $sortOrders = $request->sort_order;
+        $isActives = $request->is_active;
+
+        $used = [];
+
+        foreach ($sortOrders as $id => $order) {
+
+            $active = $isActives[$id] ?? 0;
+
+            // chỉ kiểm tra khi slider hiển thị và sort > 0
+            if ($active == 1 && $order > 0) {
+
+                if (isset($used[$order])) {
+
+                    return back()->withErrors([
+                        'sort_order' => "Có 2 slider đang hiển thị cùng thứ tự {$order}"
+                    ]);
+                }
+
+                $used[$order] = true;
+            }
+        }
+
+        // nếu không lỗi thì update
+        foreach ($sortOrders as $id => $order) {
+
+            Slider::where('id', $id)->update([
+                'sort_order' => $order,
+                'is_active' => $isActives[$id] ?? 0
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.sliders.index')
+            ->with('success', 'Cập nhật slider thành công');
     }
 }
