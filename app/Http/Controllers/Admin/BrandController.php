@@ -69,14 +69,14 @@ class BrandController extends Controller
     public function deleteMultiple(Request $request)
     {
         if (!$request->ids) {
-            return redirect()->back();
+            return redirect()->back()->with('error', 'Chưa chọn hãng');
         }
 
-        // đếm số sản phẩm
+        // Đếm số sản phẩm thuộc brand
         $productCount = Product::whereIn('brand_id', $request->ids)->count();
 
+        // Nếu có sản phẩm thì hỏi xác nhận
         if ($productCount > 0 && !$request->confirm_delete_products) {
-
             return redirect()->back()->with(
                 'confirm_delete_brand',
                 [
@@ -86,45 +86,23 @@ class BrandController extends Controller
             );
         }
 
+        // 🔥 QUAN TRỌNG: chỉ bỏ liên kết, KHÔNG xóa product
+        Product::whereIn('brand_id', $request->ids)
+            ->update(['brand_id' => null]);
+
+        // Xóa logo brand trên Cloudinary
         $brands = Brand::whereIn('id', $request->ids)->get();
-
         foreach ($brands as $brand) {
-
-            $products = Product::with('images')
-                ->where('brand_id', $brand->id)
-                ->get();
-
-            foreach ($products as $product) {
-
-                // xóa thumbnail cloudinary
-                if ($product->thumbnail_public_id) {
-                    CloudinaryService::destroy($product->thumbnail_public_id);
-                }
-
-                // xóa gallery cloudinary
-                foreach ($product->images as $img) {
-                    if ($img->image_public_id) {
-                        CloudinaryService::destroy($img->image_public_id);
-                    }
-                }
-
-                // xóa gallery DB
-                $product->images()->delete();
-
-                // xóa product
-                $product->delete();
-            }
-
-            // xóa logo brand
             if ($brand->logo_public_id) {
                 CloudinaryService::destroy($brand->logo_public_id);
             }
-
-            $brand->delete();
         }
+
+        // Xóa brand
+        Brand::whereIn('id', $request->ids)->delete();
 
         return redirect()
             ->route('admin.brands.index')
-            ->with('success', 'Đã xóa hãng và toàn bộ sản phẩm liên quan');
+            ->with('success', 'Đã xóa hãng (sản phẩm vẫn được giữ lại)');
     }
 }

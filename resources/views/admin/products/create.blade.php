@@ -7,32 +7,45 @@
 <div class="card shadow-sm p-4">
 
     <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         @csrf
 
         <div class="row">
 
             <div class="col-md-6 mb-3">
                 <label>Tên sản phẩm</label>
-                <input type="text" name="name" class="form-control" required>
+                <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
             </div>
 
             <div class="col-md-6 mb-3">
                 <label>SKU</label>
-                <input type="text" name="sku" class="form-control" required>
+                <input type="text" name="sku" class="form-control" value="{{ old('sku') }}" required>
             </div>
 
             <div class="col-md-6 mb-3">
                 <label>Danh mục</label>
-                <select name="category_id" class="form-select" required>
-                    <option value="">Chọn danh mục</option>
+
+                <select name="category_ids[]" class="form-select" multiple required>
 
                     @foreach($categories as $category)
-                    <option value="{{ $category->id }}">
+                    <option value="{{ $category->id }}"
+                        {{ in_array($category->id, old('category_ids', [])) ? 'selected' : '' }}>
                         {{ $category->name }}
                     </option>
                     @endforeach
 
                 </select>
+
+                <small class="text-muted">Giữ Ctrl để chọn nhiều</small>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -42,7 +55,7 @@
                     <option value="">Chọn thương hiệu</option>
 
                     @foreach($brands as $brand)
-                    <option value="{{ $brand->id }}">
+                    <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
                         {{ $brand->name }}
                     </option>
                     @endforeach
@@ -52,12 +65,12 @@
 
             <div class="col-md-12 mb-3">
                 <label>Mô tả ngắn</label>
-                <textarea name="short_description" class="form-control"></textarea>
+                <textarea name="short_description" class="form-control">{{ old('short_description') }}</textarea>
             </div>
 
             <div class="col-md-12 mb-3">
                 <label>Mô tả chi tiết</label>
-                <textarea name="description" class="form-control" rows="5"></textarea>
+                <textarea name="description" class="form-control" rows="5">{{ old('description') }}</textarea>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -98,29 +111,30 @@
                 <input type="text"
                     name="color"
                     class="form-control"
-                    placeholder="Ví dụ: Đen, Trắng, Đen - Vàng">
+                    placeholder="Ví dụ: Đen, Trắng, Đen - Vàng"
+                    value="{{ old('color') }}">
             </div>
 
             <div class="col-md-4 mb-3">
                 <label>Giá</label>
-                <input type="number" name="price" class="form-control">
+                <input type="number" name="price" class="form-control" value="{{ old('price') }}" required>
             </div>
 
             <div class="col-md-4 mb-3">
                 <label>Giá khuyến mãi</label>
-                <input type="number" name="sale_price" class="form-control">
+                <input type="number" name="sale_price" class="form-control" value="{{ old('sale_price') }}">
             </div>
 
             <div class="col-md-4 mb-3">
                 <label>Tồn kho</label>
-                <input type="number" name="stock" class="form-control">
+                <input type="number" name="stock" class="form-control" value="{{ old('stock') }}" required>
             </div>
 
             <div class="col-md-6 mb-3">
                 <label>Trạng thái</label>
                 <select name="is_active" class="form-select">
-                    <option value="1">Hiển thị</option>
-                    <option value="0">Ẩn</option>
+                    <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Hiển thị</option>
+                    <option value="0" {{ old('is_active') == 0 ? 'selected' : '' }}>Ẩn</option>
                 </select>
             </div>
 
@@ -146,6 +160,7 @@
 
                 const file = files[i];
 
+                const index = fileStore.items.length;
                 fileStore.items.add(file);
 
                 const reader = new FileReader();
@@ -154,43 +169,31 @@
 
                     const col = document.createElement('div');
                     col.classList.add('col-md-2', 'mb-3');
+                    col.dataset.index = index;
 
                     col.innerHTML = `
-            <div class="position-relative">
-
-                <img src="${e.target.result}"
-                     class="img-fluid rounded border">
-
-                <button type="button"
-                    class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image">
-                    ✕
-                </button>
-
-            </div>
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="img-fluid rounded border">
+                    <button type="button"
+                        class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image">
+                        ✕
+                    </button>
+                </div>
             `;
 
                     previewContainer.appendChild(col);
 
-                    const removeBtn = col.querySelector('.remove-image');
-
-                    removeBtn.onclick = function() {
-
-                        const index = [...previewContainer.children].indexOf(col);
-
-                        fileStore.items.remove(index);
-
+                    col.querySelector('.remove-image').onclick = function() {
+                        fileStore.items.remove(col.dataset.index);
                         imageInput.files = fileStore.files;
-
                         col.remove();
                     };
-
                 };
 
                 reader.readAsDataURL(file);
             }
 
             imageInput.files = fileStore.files;
-
         });
     </script>
 

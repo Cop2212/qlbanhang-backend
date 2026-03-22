@@ -10,12 +10,16 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Services\CloudinaryService;
 use App\Models\ProductImage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand']);
+        $query = Product::with([
+            'categories:id,name',
+            'brand:id,name'
+        ]);
 
         // tìm theo tên hoặc SKU
         if ($request->keyword) {
@@ -27,7 +31,9 @@ class ProductController extends Controller
 
         // lọc danh mục
         if ($request->category_id) {
-            $query->where('category_id', $request->category_id);
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category_id);
+            });
         }
 
         // lọc thương hiệu
@@ -68,81 +74,91 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required',
             'sku' => 'required|unique:products',
-            'category_id' => 'required',
             'brand_id' => 'required',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'color' => 'nullable|string|max:255',
             'thumbnail' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            'images.*' => 'image|mimes:jpg,png,jpeg|max:2048'
+            'images.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+            'category_ids' => 'required|array',
+            'category_ids.*' => 'exists:categories,id',
+            'delete_images' => 'array',
+            'delete_images.*' => 'exists:product_images,id'
         ]);
-
-        /*
+        try {
+            DB::transaction(function () use ($request) {
+                /*
     |-------------------------
     | Upload thumbnail
     |-------------------------
     */
 
-        $thumbnailUrl = null;
-        $thumbnailPublicId = null;
+                $thumbnailUrl = null;
+                $thumbnailPublicId = null;
 
-        if ($request->hasFile('thumbnail')) {
+                if ($request->hasFile('thumbnail')) {
 
-            $upload = CloudinaryService::upload(
-                $request->file('thumbnail'),
-                'products/main'
-            );
+                    $upload = CloudinaryService::upload(
+                        $request->file('thumbnail'),
+                        'products/main'
+                    );
 
-            $thumbnailUrl = $upload['url'];
-            $thumbnailPublicId = $upload['public_id'];
-        }
+                    $thumbnailUrl = $upload['url'];
+                    $thumbnailPublicId = $upload['public_id'];
+                }
 
-        /*
+                /*
     |-------------------------
     | Tạo product
     |-------------------------
     */
 
-        $product = Product::create([
-            'name' => $request->name,
-            'slug' => $this->generateSlug($request->name),
-            'sku' => $request->sku,
-            'short_description' => $request->short_description,
-            'description' => $request->description,
-            'category_id' => $request->category_id,
-            'brand_id' => $request->brand_id,
-            'thumbnail' => $thumbnailUrl,
-            'thumbnail_public_id' => $thumbnailPublicId,
-            'price' => $request->price,
-            'sale_price' => $request->sale_price,
-            'stock' => $request->stock,
-            'color' => $request->color,
-            'is_active' => $request->is_active
-        ]);
+                $product = Product::create([
+                    'name' => $request->name,
+                    'slug' => $this->generateSlug($request->name),
+                    'sku' => $request->sku,
+                    'short_description' => $request->short_description,
+                    'description' => $request->description,
+                    'brand_id' => $request->brand_id,
+                    'thumbnail' => $thumbnailUrl,
+                    'thumbnail_public_id' => $thumbnailPublicId,
+                    'price' => $request->price,
+                    'sale_price' => $request->sale_price,
+                    'stock' => $request->stock,
+                    'color' => $request->color,
+                    'is_active' => $request->boolean('is_active'),
+                ]);
 
-        /*
+                $product->categories()->sync($request->input('category_ids', []));
+
+                /*
     |-------------------------
     | Upload multiple images
     |-------------------------
     */
 
-        if ($request->hasFile('images')) {
+                if ($request->hasFile('images')) {
 
-            foreach ($request->file('images') as $key => $image) {
+                    foreach ($request->file('images') as $key => $image) {
 
-                $upload = CloudinaryService::upload(
-                    $image,
-                    'products/gallery'
-                );
+                        $upload = CloudinaryService::upload(
+                            $image,
+                            'products/gallery'
+                        );
 
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $upload['url'],
-                    'image_public_id' => $upload['public_id'],
-                    'sort_order' => $key
-                ]);
-            }
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'image_path' => $upload['url'],
+                            'image_public_id' => $upload['public_id'],
+                            'sort_order' => $key
+                        ]);
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+
+            return back()->with('error', 'Có lỗi xảy ra');
         }
 
         return redirect()
@@ -150,13 +166,17 @@ class ProductController extends Controller
             ->with('success', 'Thêm sản phẩm thành công');
     }
 
-    private function generateSlug($name)
+    private function generateSlug($name, $ignoreId = null)
     {
         $slug = Str::slug($name);
         $originalSlug = $slug;
         $count = 1;
 
-        while (Product::where('slug', $slug)->exists()) {
+        while (
+            Product::where('slug', $slug)
+            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+            ->exists()
+        ) {
             $slug = $originalSlug . '-' . $count;
             $count++;
         }
@@ -177,7 +197,7 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        $product = Product::with('images')->findOrFail($id);
+        $product = Product::with(['images', 'categories'])->findOrFail($id);
 
         $categories = Category::all();
         $brands = Brand::all();
@@ -196,107 +216,117 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'sku' => 'required',
-            'category_id' => 'required',
+            'sku' => 'required|unique:products,sku,' . $id,
             'brand_id' => 'required',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'thumbnail' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            'images.*' => 'image|mimes:jpg,png,jpeg|max:2048'
+            'images.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+            'category_ids' => 'required|array',
+            'category_ids.*' => 'exists:categories,id',
+            'delete_images' => 'array',
+            'delete_images.*' => 'exists:product_images,id'
         ]);
 
         $product = Product::findOrFail($id);
 
-        $thumbnailUrl = $product->thumbnail;
-        $thumbnailPublicId = $product->thumbnail_public_id;
+        try {
+            DB::transaction(function () use ($request, $product) {
 
-        /*
+                $thumbnailUrl = $product->thumbnail;
+                $thumbnailPublicId = $product->thumbnail_public_id;
+
+                /*
 |-----------------------
 | Xóa thumbnail cũ
 |-----------------------
 */
 
-        if ($request->has('delete_thumbnail')) {
+                if ($request->has('delete_thumbnail')) {
 
-            if ($product->thumbnail_public_id) {
-                CloudinaryService::destroy($product->thumbnail_public_id);
-            }
+                    if ($product->thumbnail_public_id) {
+                        CloudinaryService::destroy($product->thumbnail_public_id);
+                    }
 
-            $thumbnailUrl = null;
-            $thumbnailPublicId = null;
-        }
+                    $thumbnailUrl = null;
+                    $thumbnailPublicId = null;
+                }
 
-        if ($request->hasFile('thumbnail')) {
+                if ($request->hasFile('thumbnail')) {
 
-            if ($product->thumbnail_public_id) {
-                CloudinaryService::destroy($product->thumbnail_public_id);
-            }
+                    if ($product->thumbnail_public_id) {
+                        CloudinaryService::destroy($product->thumbnail_public_id);
+                    }
 
-            $upload = CloudinaryService::upload(
-                $request->file('thumbnail'),
-                'products/main'
-            );
+                    $upload = CloudinaryService::upload(
+                        $request->file('thumbnail'),
+                        'products/main'
+                    );
 
-            $thumbnailUrl = $upload['url'];
-            $thumbnailPublicId = $upload['public_id'];
-        }
+                    $thumbnailUrl = $upload['url'];
+                    $thumbnailPublicId = $upload['public_id'];
+                }
 
-        /*
+                /*
 |-----------------------
 | Xóa gallery images
 |-----------------------
 */
 
-        if ($request->has('delete_images')) {
+                if ($request->has('delete_images')) {
 
-            $images = ProductImage::whereIn('id', $request->delete_images)->get();
+                    $images = ProductImage::whereIn('id', $request->delete_images)->get();
 
-            foreach ($images as $img) {
+                    foreach ($images as $img) {
 
-                if ($img->image_public_id) {
-                    CloudinaryService::destroy($img->image_public_id);
+                        if ($img->image_public_id) {
+                            CloudinaryService::destroy($img->image_public_id);
+                        }
+
+                        $img->delete();
+                    }
                 }
 
-                $img->delete();
-            }
-        }
+                if ($request->hasFile('images')) {
 
-        if ($request->hasFile('images')) {
+                    foreach ($request->file('images') as $key => $image) {
 
-            foreach ($request->file('images') as $key => $image) {
+                        $upload = CloudinaryService::upload(
+                            $image,
+                            'products/gallery'
+                        );
 
-                $upload = CloudinaryService::upload(
-                    $image,
-                    'products/gallery'
-                );
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'image_path' => $upload['url'],
+                            'image_public_id' => $upload['public_id'],
+                            'sort_order' => $key
+                        ]);
+                    }
+                }
 
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $upload['url'],
-                    'image_public_id' => $upload['public_id'],
-                    'sort_order' => $key
+                $product->update([
+                    'name' => $request->name,
+                    'slug' => $this->generateSlug($request->name, $product->id),
+                    'sku' => $request->sku,
+                    'short_description' => $request->short_description,
+                    'description' => $request->description,
+                    'brand_id' => $request->brand_id,
+                    'price' => $request->price,
+                    'sale_price' => $request->sale_price,
+                    'stock' => $request->stock,
+                    'color' => $request->color,
+                    'thumbnail' => $thumbnailUrl,
+                    'thumbnail_public_id' => $thumbnailPublicId,
+                    'is_active' => $request->boolean('is_active'),
                 ]);
-            }
+
+                $product->categories()->sync($request->input('category_ids', []));
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra');
         }
-
-        $product->update([
-            'name' => $request->name,
-            'slug' => $this->generateSlug($request->name),
-            'sku' => $request->sku,
-            'short_description' => $request->short_description,
-            'description' => $request->description,
-            'category_id' => $request->category_id,
-            'brand_id' => $request->brand_id,
-            'price' => $request->price,
-            'sale_price' => $request->sale_price,
-            'stock' => $request->stock,
-            'color' => $request->color,
-            'thumbnail' => $thumbnailUrl,
-            'thumbnail_public_id' => $thumbnailPublicId,
-            'is_active' => $request->is_active ?? 0,
-        ]);
-
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Cập nhật sản phẩm thành công');
@@ -323,6 +353,7 @@ class ProductController extends Controller
         // xóa images DB
         $product->images()->delete();
 
+        $product->categories()->detach();
         // xóa product
         $product->delete();
 
@@ -333,6 +364,11 @@ class ProductController extends Controller
 
     public function deleteMultiple(Request $request)
     {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:products,id'
+        ]);
+
         $ids = $request->ids;
 
         if (!$ids) {
@@ -341,29 +377,37 @@ class ProductController extends Controller
                 ->with('error', 'Chưa chọn sản phẩm');
         }
 
-        $products = Product::with('images')
-            ->whereIn('id', $ids)
-            ->get();
+        try {
+            DB::transaction(function () use ($ids) {
 
-        foreach ($products as $product) {
+                $products = Product::with('images')
+                    ->whereIn('id', $ids)
+                    ->get();
 
-            // Xóa thumbnail Cloudinary
-            if ($product->thumbnail_public_id) {
-                CloudinaryService::destroy($product->thumbnail_public_id);
-            }
+                foreach ($products as $product) {
 
-            // Xóa gallery Cloudinary
-            foreach ($product->images as $img) {
-                if ($img->image_public_id) {
-                    CloudinaryService::destroy($img->image_public_id);
+                    // Xóa thumbnail Cloudinary
+                    if ($product->thumbnail_public_id) {
+                        CloudinaryService::destroy($product->thumbnail_public_id);
+                    }
+
+                    // Xóa gallery Cloudinary
+                    foreach ($product->images as $img) {
+                        if ($img->image_public_id) {
+                            CloudinaryService::destroy($img->image_public_id);
+                        }
+                    }
+
+                    // Xóa gallery DB
+                    $product->images()->delete();
+
+                    $product->categories()->detach();
+                    // Xóa product
+                    $product->delete();
                 }
-            }
-
-            // Xóa gallery DB
-            $product->images()->delete();
-
-            // Xóa product
-            $product->delete();
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Xóa thất bại');
         }
 
         return redirect()

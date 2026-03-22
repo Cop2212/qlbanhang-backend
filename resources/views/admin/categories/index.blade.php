@@ -23,8 +23,7 @@
         <button
             id="deleteSelectedBtn"
             class="btn btn-danger mb-3"
-            style="display:none"
-            onclick="return confirm('Xóa các loại đã chọn?')">
+            style="display:none">
 
             🗑 Xóa đã chọn
         </button>
@@ -152,7 +151,8 @@
 <script>
     if (confirm(
             "Loại này còn {{ session('confirm_delete_category.count') }} sản phẩm.\n\
-Bạn có chắc muốn xóa toàn bộ sản phẩm của loại này?"
+Nếu xóa, các sản phẩm sẽ KHÔNG bị xóa nhưng sẽ bị mất liên kết với loại này.\n\
+Bạn có chắc muốn tiếp tục?"
         )) {
         document.getElementById('confirmDeleteForm').submit();
     }

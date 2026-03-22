@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\SpecificationTemplateController;
+use App\Http\Controllers\Admin\ProductSpecificationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -43,6 +45,28 @@ Route::prefix('admin')
                 'products/update-status',
                 [ProductController::class, 'updateStatusMultiple']
             )->name('products.updateStatusMultiple');
+
+            //specifications
+            Route::resource('specifications', SpecificationTemplateController::class);
+            Route::post(
+                '/products/{product}/specifications/{spec}/up',
+                [ProductSpecificationController::class, 'moveUp']
+            )->name('products.specifications.up');
+
+            Route::post(
+                '/products/{product}/specifications/{spec}/down',
+                [ProductSpecificationController::class, 'moveDown']
+            )->name('products.specifications.down');
+
+            // Route quản lý thông số của từng sản phẩm
+            Route::get('products/{product}/specifications', [ProductSpecificationController::class, 'index'])
+                ->name('products.specifications.index');
+
+            Route::post('products/{product}/specifications', [ProductSpecificationController::class, 'store'])
+                ->name('products.specifications.store');
+
+            Route::delete('products/{product}/specifications/{spec}', [ProductSpecificationController::class, 'destroy'])
+                ->name('products.specifications.destroy');
 
             // CATEGORIES
             Route::resource('categories', CategoryController::class);

@@ -157,7 +157,8 @@
 
         if (confirm(
                 "Hãng này còn {{ session('confirm_delete_brand.count') }} sản phẩm.\n\
-Bạn có chắc muốn xóa toàn bộ sản phẩm của hãng này?"
+Nếu xóa, các sản phẩm sẽ KHÔNG bị xóa mà sẽ chuyển về 'không có hãng'.\n\
+Bạn có chắc muốn tiếp tục?"
             )) {
             document.getElementById('confirmDeleteForm').submit();
         }

@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\Product;
 use App\Services\CloudinaryService;
 use App\Models\ProductImage;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
@@ -42,14 +43,22 @@ class CategoryController extends Controller
 
     public function deleteMultiple(Request $request)
     {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:categories,id'
+        ]);
+
         if (!$request->ids) {
             return redirect()->back()->with('error', 'Chưa chọn loại');
         }
 
-        $productCount = Product::whereIn('category_id', $request->ids)->count();
+        // Đếm sản phẩm thuộc category
+        $productCount = DB::table('category_product')
+            ->whereIn('category_id', $request->ids)
+            ->count();
 
+        // Nếu có sản phẩm thì hỏi xác nhận
         if ($productCount > 0 && !$request->confirm_delete_products) {
-
             return redirect()->back()->with(
                 'confirm_delete_category',
                 [
@@ -59,35 +68,16 @@ class CategoryController extends Controller
             );
         }
 
-        $products = Product::with('images')
+        // 🔥 QUAN TRỌNG: chỉ bỏ liên kết, KHÔNG xóa product
+        DB::table('category_product')
             ->whereIn('category_id', $request->ids)
-            ->get();
+            ->delete();
 
-        foreach ($products as $product) {
-
-            // xóa thumbnail Cloudinary
-            if ($product->thumbnail_public_id) {
-                CloudinaryService::destroy($product->thumbnail_public_id);
-            }
-
-            // xóa gallery Cloudinary
-            foreach ($product->images as $img) {
-                if ($img->image_public_id) {
-                    CloudinaryService::destroy($img->image_public_id);
-                }
-            }
-
-            // xóa gallery DB
-            $product->images()->delete();
-
-            // xóa product
-            $product->delete();
-        }
-
+        // Xóa category
         Category::whereIn('id', $request->ids)->delete();
 
         return redirect()
             ->route('admin.categories.index')
-            ->with('success', 'Đã xóa loại và toàn bộ sản phẩm liên quan');
+            ->with('success', 'Đã xóa loại (sản phẩm vẫn được giữ lại)');
     }
 }

@@ -100,8 +100,7 @@
         <button type="submit"
             id="deleteSelectedBtn"
             class="btn btn-danger mb-3"
-            style="display:none"
-            onclick="return confirm('Xóa các sản phẩm đã chọn?')">
+            style="display:none">
             🗑 Xóa đã chọn
         </button>
 
@@ -194,7 +193,11 @@
                         </td>
 
                         <td>
-                            {{ $product->category->name ?? '---' }}
+                            @if($product->categories->count())
+                            {{ $product->categories->pluck('name')->join(', ') }}
+                            @else
+                            ---
+                            @endif
                         </td>
 
                         <td>
@@ -260,6 +263,11 @@
                                 class="btn btn-sm btn-warning">
                                 Sửa
                             </a>
+
+                            <a href="{{ route('admin.products.specifications.index', $product->id) }}"
+                                class="btn btn-sm btn-info mt-1">
+                                Thông số
+                            </a>
                         </td>
 
                     </tr>
@@ -289,15 +297,15 @@
 </div>
 
 <script>
-    document.getElementById('checkAll').addEventListener('click', function() {
+    // document.getElementById('checkAll').addEventListener('click', function() {
 
-        let checkboxes = document.querySelectorAll('.product-checkbox');
+    //     let checkboxes = document.querySelectorAll('.product-checkbox');
 
-        checkboxes.forEach(cb => {
-            cb.checked = this.checked;
-        });
+    //     checkboxes.forEach(cb => {
+    //         cb.checked = this.checked;
+    //     });
 
-    });
+    // });
 
     const checkAll = document.getElementById('checkAll');
     const checkboxes = document.querySelectorAll('.product-checkbox');

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Models\Company;
 use App\Http\Controllers\Api\ConsultationController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\CategoryController;
 
 Route::get('/settings', function () {
     return Setting::first();
@@ -21,6 +22,7 @@ Route::get('/sliders', function () {
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/featured', [ProductController::class, 'featuredProducts']);
+Route::get('/products/best-seller', [ProductController::class, 'bestSeller']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 
 Route::get('/company', function () {
@@ -31,3 +33,5 @@ Route::post('/consultations', [ConsultationController::class, 'store']);
 
 Route::post('/reviews', [ReviewController::class, 'store']);
 Route::get('/products/{id}/reviews', [ReviewController::class, 'productReviews']);
+
+Route::get('/categories', [CategoryController::class, 'index']);

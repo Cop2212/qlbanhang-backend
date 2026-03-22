@@ -70,6 +70,7 @@
 
         <a href="{{ route('admin.dashboard') }}">🏠 Dashboard</a>
         <a href="{{ route('admin.products.index') }}">📦 Sản phẩm</a>
+        <a href="{{ route('admin.specifications.index') }}">📦 Thông số sản phẩm</a>
         <a href="{{ route('admin.categories.index') }}">📂 Loại sản phẩm</a>
         <a href="{{ route('admin.brands.index') }}">🏷 Hãng</a>
         <a href="#">🛒 Đơn hàng</a>

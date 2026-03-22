@@ -12,7 +12,6 @@ class Product extends Model
         'sku',
         'short_description',
         'description',
-        'category_id',
         'brand_id',
         'thumbnail',
         'thumbnail_public_id',
@@ -25,15 +24,18 @@ class Product extends Model
     ];
 
     // Quan hệ Category
-    public function category()
+    public function categories()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class);
     }
 
     // Quan hệ Brand
     public function brand()
     {
-        return $this->belongsTo(Brand::class);
+        return $this->belongsTo(Brand::class)
+            ->withDefault([
+                'name' => 'Không có hãng'
+            ]);
     }
 
     public function images()
@@ -44,5 +46,10 @@ class Product extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function specifications()
+    {
+        return $this->hasMany(ProductSpecification::class);
     }
 }

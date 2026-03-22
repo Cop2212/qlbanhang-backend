@@ -89,16 +89,22 @@
 
             <div class="col-md-6 mb-3">
                 <label>Danh mục</label>
-                <select name="category_id" class="form-select">
+                @php
+                $selectedCategories = $product->categories->pluck('id')->toArray();
+                @endphp
+
+                <select name="category_ids[]" class="form-select" multiple>
 
                     @foreach($categories as $category)
                     <option value="{{ $category->id }}"
-                        {{ $product->category_id == $category->id ? 'selected' : '' }}>
+                        {{ in_array($category->id, $selectedCategories) ? 'selected' : '' }}>
                         {{ $category->name }}
                     </option>
                     @endforeach
 
                 </select>
+
+                <small class="text-muted">Giữ Ctrl để chọn nhiều</small>
             </div>
 
             <div class="col-md-6 mb-3">
