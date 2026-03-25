@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\SpecificationTemplateController;
 use App\Http\Controllers\Admin\ProductSpecificationController;
+use App\Http\Controllers\Admin\ConsultationAdminController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -117,7 +118,15 @@ Route::prefix('admin')
                 ->name('company.update');
 
             // CONSULTATIONS
-            Route::resource('consultations', \App\Http\Controllers\Admin\ConsultationAdminController::class)
-                ->only(['index', 'show', 'update']);
+            // Trang danh sách
+            Route::get('consultations', [ConsultationAdminController::class, 'index'])
+                ->name('consultations.index');
+
+            // Update trạng thái + nội dung
+            Route::patch('consultations/{id}', [ConsultationAdminController::class, 'update'])->name('consultations.update');
+            // Xóa
+            Route::delete('consultations/{id}', [ConsultationAdminController::class, 'destroy'])->name('consultations.destroy');
+            Route::patch('consultations/{id}/admin-message', [ConsultationAdminController::class, 'updateAdminMessage'])
+                ->name('consultations.updateAdminMessage');
         });
     });
