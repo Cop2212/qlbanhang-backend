@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Models\TraderCommission;
 use App\Models\TraderProfile;
 
 class TraderProfileController extends Controller
@@ -39,6 +40,7 @@ class TraderProfileController extends Controller
 
     public function me()
     {
+        /** @var \App\Models\Trader $trader */
         $trader = Auth::user();
 
         $profile = $trader->profile;
