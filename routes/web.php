@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\SpecificationTemplateController;
 use App\Http\Controllers\Admin\ProductSpecificationController;
 use App\Http\Controllers\Admin\ConsultationAdminController;
+use App\Http\Controllers\Admin\TraderController;
+use App\Http\Controllers\Web\ProductPageController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -128,5 +130,23 @@ Route::prefix('admin')
             Route::delete('consultations/{id}', [ConsultationAdminController::class, 'destroy'])->name('consultations.destroy');
             Route::patch('consultations/{id}/admin-message', [ConsultationAdminController::class, 'updateAdminMessage'])
                 ->name('consultations.updateAdminMessage');
+
+            // TRADERS
+            Route::get('traders', [TraderController::class, 'index'])
+                ->name('traders.index');
+
+            Route::post('traders/{id}/approve', [TraderController::class, 'approve'])
+                ->name('traders.approve');
+
+            Route::post('traders/{id}/reject', [TraderController::class, 'reject'])
+                ->name('traders.reject');
+
+            Route::get('traders/{id}', [TraderController::class, 'show'])
+                ->name('traders.show');
         });
     });
+
+Route::get('/products/{slug}', [ProductPageController::class, 'show']);
+Route::get('/{any}', function () {
+    return view('app');
+})->where('any', '.*');

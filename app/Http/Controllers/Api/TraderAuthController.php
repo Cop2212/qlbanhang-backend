@@ -24,6 +24,10 @@ class TraderAuthController extends Controller
             ]
         ]);
 
+        do {
+            $refCode = strtoupper(Str::random(8));
+        } while (Trader::where('ref_code', $refCode)->exists());
+
         $trader = Trader::create([
             'name' => $request->name,
             'email' => $request->email,

@@ -36,6 +36,42 @@
         </select>
     </div>
 
+    <div class="col-md-3">
+        <label>Affiliate</label>
+        <select name="trader_id" class="form-select">
+            <option value="">-- Tất cả --</option>
+            @foreach($traders as $trader)
+            <option value="{{ $trader->id }}" {{ request('trader_id') == $trader->id ? 'selected' : '' }}>
+                {{ $trader->name }}
+            </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label>Sản phẩm</label>
+        <select name="product_id" class="form-select">
+            <option value="">-- Tất cả --</option>
+            @foreach($products as $product)
+            <option value="{{ $product->id }}" {{ request('product_id') == $product->id ? 'selected' : '' }}>
+                {{ $product->name }}
+            </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label>Ref code</label>
+        <select name="ref_code" class="form-select">
+            <option value="">-- Tất cả --</option>
+            @foreach($refCodes as $code)
+            <option value="{{ $code }}" {{ request('ref_code') == $code ? 'selected' : '' }}>
+                {{ $code }}
+            </option>
+            @endforeach
+        </select>
+    </div>
+
     <!-- Trạng thái -->
     <div class="col-md-2">
         <label>Trạng thái</label>
@@ -72,6 +108,9 @@
             <th>Tên</th>
             <th>Điện thoại</th>
             <th>Email</th>
+            <th>Sản phẩm</th>
+            <th>Affiliate</th>
+            <th>Ref code</th>
             <th>Trạng thái</th>
             <th>Thời gian</th>
             <th>Thao tác</th>
@@ -84,6 +123,17 @@
             <td>{{ $item->name }}</td>
             <td>{{ $item->phone }}</td>
             <td>{{ $item->email }}</td>
+            <td>
+                {{ $item->product->name ?? 'N/A' }}
+            </td>
+
+            <td>
+                {{ $item->trader->name ?? 'N/A' }}
+            </td>
+
+            <td>
+                {{ $item->ref_code ?? 'N/A' }}
+            </td>
             <td>
                 @if($item->status == 'pending')
                 <span class="badge bg-warning">Chưa liên hệ</span>
@@ -99,7 +149,7 @@
 
         <!-- Dòng chi tiết collapse -->
         <tr class="collapse" id="detail-{{ $item->id }}">
-            <td colspan="6">
+            <td colspan="9">
                 <div class="p-3 bg-light">
 
                     <!-- Nội dung khách gửi readonly -->
@@ -120,10 +170,19 @@
 
                         <div class="mb-2">
                             <label><strong>Trạng thái:</strong></label><br>
-                            <select name="status" class="form-select w-auto d-inline">
+                            <select name="status" class="form-select w-auto d-inline" data-id="{{ $item->id }}">
                                 <option value="pending" {{ $item->status=='pending' ? 'selected' : '' }}>Chưa liên hệ</option>
                                 <option value="contacted" {{ $item->status=='contacted' ? 'selected' : '' }}>Đã liên hệ</option>
                                 <option value="failed" {{ $item->status=='failed' ? 'selected' : '' }}>Gọi không được</option>
+                            </select>
+                        </div>
+                        <div class="mb-2" id="result-wrapper-{{ $item->id }}" style="display: none;">
+                            <label><strong>Kết quả:</strong></label><br>
+                            <select name="result" class="form-select w-auto d-inline">
+                                <option value="">-- Chọn kết quả --</option>
+                                <option value="thinking" {{ $item->result=='thinking' ? 'selected' : '' }}>Đang suy nghĩ</option>
+                                <option value="not_bought" {{ $item->result=='not_bought' ? 'selected' : '' }}>Không mua</option>
+                                <option value="bought" {{ $item->result=='bought' ? 'selected' : '' }}>Đã mua</option>
                             </select>
                         </div>
 
@@ -146,3 +205,29 @@
 
 {{ $items->links() }}
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('select[name="status"]').forEach(function(select) {
+
+            const id = select.getAttribute('data-id');
+            const resultWrapper = document.getElementById('result-wrapper-' + id);
+
+            function toggleResult() {
+                if (!resultWrapper) return; // ✅ tránh lỗi null
+
+                if (select.value === 'contacted') {
+                    resultWrapper.style.display = 'block';
+                } else {
+                    resultWrapper.style.display = 'none';
+                }
+            }
+
+            // init
+            toggleResult();
+
+            // on change
+            select.addEventListener('change', toggleResult);
+        });
+    });
+</script>

@@ -45,9 +45,10 @@ class TraderProfileController extends Controller
 
         $profile = $trader->profile;
 
-        $total = $trader->commissions()->sum('amount');
-        $paid = $trader->commissions()->where('status', 'paid')->sum('amount');
-        $pending = $trader->commissions()->where('status', 'pending')->sum('amount');
+        $commissions = $trader->commissions;
+        $total = $commissions->sum('amount');
+        $paid = $commissions->where('status', 'paid')->sum('amount');
+        $pending = $commissions->where('status', 'pending')->sum('amount');
 
         return response()->json([
             'user' => $trader,

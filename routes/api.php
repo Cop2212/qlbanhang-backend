@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TraderAuthController;
 use App\Http\Controllers\Api\TraderProfileController;
+use App\Http\Controllers\Api\TraderLinkController;
 use Illuminate\Http\Request;
 
 Route::get('/settings', function () {
@@ -32,7 +33,7 @@ Route::get('/company', function () {
     return Company::first();
 });
 
-Route::post('/consultations', [ConsultationController::class, 'store']);
+Route::post('/consultations', [ConsultationController::class, 'store'])->middleware('throttle:10,1');
 
 Route::post('/reviews', [ReviewController::class, 'store']);
 Route::get('/products/{id}/reviews', [ReviewController::class, 'productReviews']);
@@ -45,9 +46,9 @@ Route::post('/trader/logout', [TraderAuthController::class, 'logout']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/trader/me', [TraderProfileController::class, 'me']);
+    Route::post('/trader/links', [TraderLinkController::class, 'store']);
     Route::post('/trader/profile', [TraderProfileController::class, 'update']);
 });
-Route::post('/trader/profile', [TraderProfileController::class, 'update']);
 Route::post('/trader/refresh', [TraderAuthController::class, 'refresh']);
 Route::post('/trader/change-password', [TraderAuthController::class, 'changePassword'])
     ->middleware('throttle:5,1'); // 5 lần / phút

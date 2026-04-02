@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\Trader;
+use App\Models\TraderLink;
+use App\Models\TraderClick;
 
 class ProductController extends Controller
 {
@@ -50,15 +53,15 @@ class ProductController extends Controller
             ->paginate($perPage);
     }
 
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
+        // 🔥 LOAD PRODUCT (BẮT BUỘC)
         $product = Product::with([
             'images',
             'categories',
             'brand',
             'specifications' => function ($q) {
-                $q->orderBy('sort_order')
-                    ->with('template');
+                $q->orderBy('sort_order')->with('template');
             }
         ])
             ->where('slug', $slug)

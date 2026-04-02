@@ -35,4 +35,14 @@ class Trader extends Authenticatable
     {
         return $this->hasMany(TraderCommission::class);
     }
+
+    public function consultations()
+    {
+        return $this->hasMany(Consultation::class);
+    }
+
+    public function links()
+    {
+        return $this->hasMany(TraderLink::class);
+    }
 }

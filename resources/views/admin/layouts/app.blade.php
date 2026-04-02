@@ -82,6 +82,10 @@
         <a href="{{ route('admin.sliders.index') }}">🖼 Slider</a>
         <a href="{{ route('admin.reviews.index') }}">⭐ Đánh giá</a>
         <a href="{{ route('admin.settings.index') }}">⚙ Cài đặt website</a>
+
+        <hr>
+
+        <a href="{{ route('admin.traders.index') }}">👤 Trader</a>
     </div>
 
     <div class="content">

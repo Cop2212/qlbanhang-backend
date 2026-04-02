@@ -25,4 +25,9 @@ class TraderCommission extends Model
     {
         return $this->belongsTo(Trader::class);
     }
+
+    public function consultation()
+    {
+        return $this->belongsTo(Consultation::class);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Consultation;
+use App\Models\Trader;
 
 class ConsultationController extends Controller
 {
@@ -12,20 +13,28 @@ class ConsultationController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-
-            // PHONE
-            'phone' => [
-                'required',
-                'regex:/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/'
-            ],
-
-            // EMAIL
+            'phone' => ['required', 'regex:/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/'],
             'email' => 'required|email:rfc,dns',
+            'message' => 'nullable|string',
+            'product_id' => 'required|integer',
 
-            'message' => 'nullable|string'
+            'ref_code' => 'nullable|string',
+
+            'utm_source' => 'nullable|string',
+            'utm_medium' => 'nullable|string',
+            'utm_campaign' => 'nullable|string',
         ]);
 
         $data['status'] = 'pending';
+
+        // ✅ resolve trader_id từ ref_code
+        if (!empty($data['ref_code'])) {
+            $trader = Trader::where('ref_code', $data['ref_code'])->first();
+
+            if ($trader) {
+                $data['trader_id'] = $trader->id;
+            }
+        }
 
         Consultation::create($data);
 
