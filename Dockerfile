@@ -35,4 +35,10 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 
 EXPOSE 80
 
-CMD php artisan migrate --force && php artisan db:seed --force && apache2-foreground
+CMD php artisan optimize:clear && \
+php artisan config:cache && \
+php artisan route:cache && \
+php artisan view:cache && \
+php artisan migrate --force && \
+php artisan db:seed --force && \
+apache2-foreground
