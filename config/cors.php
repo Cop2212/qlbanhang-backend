@@ -7,7 +7,10 @@ return [
     'allowed_methods' => ['*'],
 
     // ❌ KHÔNG dùng *
-    'allowed_origins' => ['http://localhost:4200'],
+    'allowed_origins' => [
+        'http://localhost:4200',
+        'https://qlbanhang-frontend.onrender.com'
+    ],
 
     'allowed_origins_patterns' => [],
 
