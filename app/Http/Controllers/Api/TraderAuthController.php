@@ -88,10 +88,10 @@ class TraderAuthController extends Controller
             60 * 24 * 7, // 7 ngày
             '/',
             null,
-            false,  // ⚠ localhost → false
+            true,  // ⚠ localhost → false
             true,   // HttpOnly
             false,
-            'Lax'
+            'None'
         );
     }
 
@@ -118,10 +118,10 @@ class TraderAuthController extends Controller
                 -1,
                 '/',
                 null,
-                false,
+                true,
                 true,
                 false,
-                'Lax'
+                'None'
             );
     }
 
