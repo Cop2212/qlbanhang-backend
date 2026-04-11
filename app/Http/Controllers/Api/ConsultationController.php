@@ -14,9 +14,9 @@ class ConsultationController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => ['required', 'regex:/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/'],
-            'email' => 'required|email:rfc,dns',
+            'email' => 'required|email',
             'message' => 'nullable|string',
-            'product_id' => 'required|integer',
+            'product_id' => 'nullable|integer',
 
             'ref_code' => 'nullable|string',
 

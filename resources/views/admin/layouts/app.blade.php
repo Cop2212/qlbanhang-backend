@@ -10,14 +10,31 @@
     <style>
         body {
             background-color: #f4f6f9;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar {
             width: 250px;
-            min-height: 100vh;
+            height: 100vh;
             background: #1f2937;
             color: white;
             position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto; /* Thêm thanh cuộn dọc */
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        /* Tùy chỉnh thanh cuộn cho đẹp hơn */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
         }
 
         .sidebar a {
@@ -25,22 +42,44 @@
             display: block;
             padding: 12px 20px;
             text-decoration: none;
+            transition: 0.2s;
         }
 
         .sidebar a:hover {
             background: #374151;
             color: white;
+            padding-left: 25px;
         }
 
         .content {
             margin-left: 250px;
             padding: 20px;
+            flex: 1;
+            transition: all 0.3s;
         }
 
         .topbar {
             background: white;
             padding: 15px 20px;
             border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        /* Responsive cho màn hình nhỏ */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .content {
+                margin-left: 0;
+            }
+            .sidebar h4 {
+                padding: 10px !important;
+            }
         }
 
         .card-dashboard {

@@ -23,6 +23,14 @@ class ProductController extends Controller
             });
         }
 
+        // SEARCH
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('short_description', 'like', '%' . $request->search . '%');
+            });
+        }
+
         // SORT
         switch ($request->sort) {
             case 'price_asc':
