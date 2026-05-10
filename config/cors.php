@@ -9,10 +9,13 @@ return [
     // ❌ KHÔNG dùng *
     'allowed_origins' => [
         'http://localhost:4200',
-        'https://qlbanhang-frontend.onrender.com'
+        'https://qlbanhang-frontend.onrender.com',
+        'https://gomab.vn',
+        'https://www.gomab.vn',
+        'https://api.gomab.vn'
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['https?:\/\/.*\.gomab\.vn$', 'https?:\/\/gomab\.vn$'],
 
     'allowed_headers' => ['*'],
 
