@@ -56,6 +56,7 @@
                         <th>Link</th>
                         <th width="120">Thứ tự</th>
                         <th width="150">Trạng thái</th>
+                        <th width="150" class="text-end">Hành động</th>
                     </tr>
                 </thead>
 
@@ -79,7 +80,7 @@
 
                         <td>
                             @if($slider->image)
-                            <img src="{{ $slider->image }}" width="120">
+                            <img src="{{ $slider->image }}" width="120" style="border-radius: 8px;">
                             @else
                             <span class="text-muted">Không có ảnh</span>
                             @endif
@@ -115,6 +116,19 @@
 
                             </select>
 
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('admin.sliders.edit', $slider->id) }}" class="btn btn-sm btn-info text-white">
+                                    Sửa
+                                </a>
+                                <form action="{{ route('admin.sliders.destroy', $slider->id) }}" method="POST" onsubmit="return confirm('Xóa slider này?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </div>
                         </td>
 
                     </tr>

@@ -66,6 +66,68 @@ class BrandController extends Controller
             ->with('success', 'Thêm hãng thành công!');
     }
 
+    public function edit($id)
+    {
+        $brand = Brand::findOrFail($id);
+        return view('admin.brands.edit', compact('brand'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $brand = Brand::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|unique:brands,name,' . $id,
+            'logo' => 'nullable|image|max:2048'
+        ]);
+
+        $logoUrl = $brand->logo;
+        $publicId = $brand->logo_public_id;
+
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            // Xóa ảnh cũ
+            if ($brand->logo_public_id) {
+                CloudinaryService::destroy($brand->logo_public_id);
+            }
+
+            // Upload ảnh mới
+            $upload = CloudinaryService::upload($request->file('logo')->getRealPath(), 'brands');
+            $logoUrl = $upload['secure_url'];
+            $publicId = $upload['public_id'];
+        }
+
+        $brand->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'logo' => $logoUrl,
+            'logo_public_id' => $publicId,
+            'is_active' => $request->is_active ?? 1
+        ]);
+
+        return redirect()
+            ->route('admin.brands.index')
+            ->with('success', 'Cập nhật hãng thành công!');
+    }
+
+    public function destroy($id)
+    {
+        $brand = Brand::findOrFail($id);
+
+        // Bỏ liên kết sản phẩm
+        Product::where('brand_id', $id)->update(['brand_id' => null]);
+
+        // Xóa ảnh trên Cloudinary
+        if ($brand->logo_public_id) {
+            CloudinaryService::destroy($brand->logo_public_id);
+        }
+
+        $brand->delete();
+
+        return redirect()
+            ->route('admin.brands.index')
+            ->with('success', 'Xóa hãng thành công!');
+    }
+
     public function deleteMultiple(Request $request)
     {
         if (!$request->ids) {

@@ -57,7 +57,8 @@ class ProductController extends Controller
         }
 
         return $query
-            ->select('id', 'name', 'slug', 'price', 'thumbnail', 'color')
+            ->with('brand')
+            ->select('id', 'name', 'slug', 'price', 'thumbnail', 'color', 'is_featured', 'is_best_seller', 'stock', 'brand_id')
             ->paginate($perPage);
     }
 
@@ -105,7 +106,7 @@ class ProductController extends Controller
     {
         return Product::where('is_featured', 1)
             ->where('is_active', 1)
-            ->select('id', 'name', 'slug', 'price', 'thumbnail', 'color')
+            ->select('id', 'name', 'slug', 'price', 'thumbnail', 'color', 'is_featured', 'is_best_seller', 'stock')
             ->latest()
             ->take(100)
             ->get();
@@ -115,7 +116,7 @@ class ProductController extends Controller
     {
         return Product::where('is_best_seller', 1)
             ->where('is_active', 1)
-            ->select('id', 'name', 'slug', 'price', 'thumbnail')
+            ->select('id', 'name', 'slug', 'price', 'thumbnail', 'is_featured', 'is_best_seller', 'stock')
             ->latest()
             ->take(8)
             ->get();

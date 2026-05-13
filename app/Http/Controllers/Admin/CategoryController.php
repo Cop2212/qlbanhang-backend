@@ -41,6 +41,47 @@ class CategoryController extends Controller
             ->with('success', 'Thêm loại thành công!');
     }
 
+    public function edit($id)
+    {
+        $category = Category::findOrFail($id);
+        return view('admin.categories.edit', compact('category'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $category = Category::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|unique:categories,name,' . $id
+        ]);
+
+        $category->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'is_active' => $request->is_active
+        ]);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Cập nhật loại thành công!');
+    }
+
+    public function destroy($id)
+    {
+        $category = Category::findOrFail($id);
+
+        // Bỏ liên kết với sản phẩm
+        DB::table('category_product')
+            ->where('category_id', $id)
+            ->delete();
+
+        $category->delete();
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Xóa loại thành công!');
+    }
+
     public function deleteMultiple(Request $request)
     {
         $request->validate([

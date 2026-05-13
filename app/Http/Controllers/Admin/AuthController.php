@@ -26,7 +26,17 @@ class AuthController extends Controller
 
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $totalProducts = \App\Models\Product::count();
+        $totalConsultations = \App\Models\Consultation::count();
+        $totalTraders = \App\Models\Trader::count();
+        $recentConsultations = \App\Models\Consultation::latest()->take(5)->get();
+
+        return view('admin.dashboard', compact(
+            'totalProducts',
+            'totalConsultations',
+            'totalTraders',
+            'recentConsultations'
+        ));
     }
 
     public function logout()
