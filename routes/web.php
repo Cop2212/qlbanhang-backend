@@ -36,6 +36,11 @@ Route::prefix('admin')
             Route::post('/logout', [AuthController::class, 'logout'])
                 ->name('logout');
 
+            Route::get('/change-password', [AuthController::class, 'changePasswordForm'])
+                ->name('change-password');
+            Route::post('/change-password', [AuthController::class, 'updatePassword'])
+                ->name('update-password');
+
             // PRODUCTS
             Route::resource('products', ProductController::class);
 

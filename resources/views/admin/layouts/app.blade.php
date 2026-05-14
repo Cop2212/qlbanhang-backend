@@ -129,6 +129,9 @@
         <hr>
 
         <a href="{{ route('admin.traders.index') }}">👤 Trader</a>
+        
+        <hr>
+        <a href="{{ route('admin.change-password') }}">🔐 Đổi mật khẩu</a>
     </div>
 
     <div class="content">
