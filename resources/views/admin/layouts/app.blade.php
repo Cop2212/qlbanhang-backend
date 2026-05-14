@@ -5,6 +5,10 @@
     <title>Admin Panel</title>
     <meta charset="UTF-8">
 
+    @if(!auth()->guard('admin')->check() && !request()->routeIs('admin.login'))
+        <script>window.location.href = "{{ route('admin.login') }}";</script>
+    @endif
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>

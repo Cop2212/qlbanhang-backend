@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\TraderController;
 use App\Http\Controllers\Web\ProductPageController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('admin.dashboard');
 });
 
 Route::prefix('admin')
