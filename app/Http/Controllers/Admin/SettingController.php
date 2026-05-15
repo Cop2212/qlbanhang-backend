@@ -37,7 +37,8 @@ class SettingController extends Controller
             'zalo'        => 'nullable|string|max:255',
             'footer_text' => 'nullable|string',
             'max_sliders'  => 'nullable|integer|min:1',
-            'logo'        => 'nullable|image|max:2048'
+            'logo'        => 'nullable|image|max:2048',
+            'facebook_page_id' => 'nullable|string|max:50'
         ]);
 
         $data = $request->except('logo');

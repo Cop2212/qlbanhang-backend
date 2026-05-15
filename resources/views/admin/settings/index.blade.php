@@ -68,10 +68,18 @@
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <label>Facebook</label>
+                    <label>Facebook Link</label>
                     <input type="text" name="facebook"
                         class="form-control"
                         value="{{ $setting->facebook }}">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Facebook Page ID (Để hiện Chat Web)</label>
+                    <input type="text" name="facebook_page_id"
+                        class="form-control"
+                        value="{{ $setting->facebook_page_id }}"
+                        placeholder="Ví dụ: 123456789">
                 </div>
 
                 <div class="col-md-4 mb-3">

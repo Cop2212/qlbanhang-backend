@@ -17,6 +17,7 @@ class Setting extends Model
         'youtube',
         'zalo',
         'footer_text',
-        'max_sliders'
+        'max_sliders',
+        'facebook_page_id'
     ];
 }
