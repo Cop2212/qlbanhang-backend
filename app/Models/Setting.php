@@ -18,6 +18,7 @@ class Setting extends Model
         'zalo',
         'footer_text',
         'max_sliders',
-        'facebook_page_id'
+        'zalo_oa_id',
+        'messenger_url'
     ];
 }

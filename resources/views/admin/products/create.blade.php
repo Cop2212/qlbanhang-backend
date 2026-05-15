@@ -32,20 +32,25 @@
             </div>
 
             <div class="col-md-6 mb-3">
-                <label>Danh mục</label>
-
-                <select name="category_ids[]" class="form-select" multiple required>
-
+                <label class="form-label d-block">Danh mục</label>
+                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto; background-color: #f8f9fa;">
                     @foreach($categories as $category)
-                    <option value="{{ $category->id }}"
-                        {{ in_array($category->id, old('category_ids', [])) ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               name="category_ids[]" 
+                               value="{{ $category->id }}" 
+                               id="category_{{ $category->id }}"
+                               {{ in_array($category->id, old('category_ids', [])) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="category_{{ $category->id }}">
+                            {{ $category->name }}
+                        </label>
+                    </div>
                     @endforeach
-
-                </select>
-
-                <small class="text-muted">Giữ Ctrl để chọn nhiều</small>
+                </div>
+                @error('category_ids')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             <div class="col-md-6 mb-3">
